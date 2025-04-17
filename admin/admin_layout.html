@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Shop">
+    <meta name="author" content="Shop">
+    <title>index2</title>
+    <link rel="icon" type="image/png" href="../images/favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="../css/main.css">
+    <link rel="stylesheet" type="text/css" href="../css/footable.core.min.css">
+    <style>
+        #wrap {
+            background: #d85d5d;
+        }
+
+        .row-fluid {
+            margin-bottom: 20px;
+        }
+
+        .tabs_container {
+            min-height: 300px;
+        }
+
+        .tabs_container div {
+            margin-left: 20px;
+            margin-bottom: 40px;
+        }
+
+        #banner-popup {
+            background: #fff;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 5999;
+            padding: 5px;
+            box-shadow: 0px 0px 3px 0px #4D4D4D;
+            border: 1px solid;
+            width: auto;
+            height: auto;
+            margin-left: -320px;
+            margin-top: -180px;
+        }
+
+        #banner-popup object {
+            float: left;
+            vertical-align: top;
+            max-height: 100%;
+        }
+
+        #banner-popup .close-but {
+            height: 24px;
+            width: 24px;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            cursor: pointer;
+            /*background: url(/static/interface/img/close-but.png) no-repeat;*/
+        }
+
+        #fade {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0.4;
+            z-index: 5000;
+        }
+
+        #banner-popup.hidden, #fade.hidden {
+            display: none;
+        }
+
+        .video-container {
+            display: none;
+        }
+
+        .webinar-video {
+            display: inline-block;
+        }
+    </style>
+    <script src="../js/jquery-1.11.2.min.js"></script>
+
+    <!-- Start of Zendesk Chat Script-->
+    <script type="text/javascript">
+        window.$zopim || (function (d, s) {
+            var z = $zopim = function (c) {
+                z._.push(c)
+            }, $ = z.s =
+                d.createElement(s), e = d.getElementsByTagName(s)[0];
+            z.set = function (o) {
+                z.set._.push(o)
+            };
+            z._ = [];
+            z.set._ = [];
+            $.async = !0;
+            $.setAttribute("charset", "utf-8");
+            $.src = "//v2.zopim.com/?4Jnf6zF23la2mSsXajYjEc9Z5E80uUPR";
+            z.t = +new Date;
+            $.type = "text/javascript";
+            e.parentNode.insertBefore($, e)
+        })(document, "script");
+    </script>
+   <!-- End of Zendesk Chat Script-->
+
+    <style>
+        .zopim {
+            display: none;
+        }
+    </style>
+    <style media="print" class="jx_ui_StyleSheet" __jx__id="___$_2" type="text/css">.zopim {
+        display: none !important
+    }</style>
+    <style type="text/css">@keyframes fadeInOpacity {
+                               0% {
+                                   opacity: 0
+                               }
+                               to {
+                                   opacity: 1
+                               }
+                           }
+
+    :hover > * > .fbvd--wrapper {
+        animation-name: fadeInOpacity;
+        animation-duration: .3s;
+        opacity: 1
+    }
+
+    .fbvd--wrapper {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        opacity: 0;
+        text-align: center;
+        margin: 0;
+        z-index: 5
+    }
+
+    .fbvd--wrapper a {
+
+        background-color: #fff;
+        display: inline-block;
+        font: 700 14px Helvetica, Arial, sans-serif;
+        color: #4b4f56;
+        text-decoration: none;
+        vertical-align: middle;
+        padding: 0px 8px 0px;
+        margin-right: 8px;
+        border-radius: 2px;
+        line-height: 22px;
+        padding-left: 19px;
+        border: 1px solid #e7e7e7;
+        background-size: 13px
+    }
+
+    .fbvd--wrapper a:last-child {
+        margin-right: 0
+    }
+
+    .fbvd--wrapper a:hover {
+        text-decoration: none
+    }
+
+    .fbvd--wrapper a:focus {
+        box-shadow: 0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15);
+        outline: none
+    }
+
+    .fbvd--wrapper b {
+        font-size: 13px;
+        position: relative;
+        top: 1px;
+        color: #3b5998;
+        font-weight: 400
+    }</style>
+</head>
+<body>
+
+
+<div class="page-container list-menu-view">
+
+    <!--Leftbar Start Here -->
+    <div class="left-aside">
+        <div class="aside-branding">
+            <a href="" class="logo" title="Home"><img
+                    src="../images/logo-mob.png" alt="Home"
+                    class="img-responsive hidden-md"></a>
+        </div>
+        <div id="ps_container" class="ps-container ps-theme-default" data-ps-id="">
+            <div class="left-navigation">
+                <ul class="list-accordion">
+                    <li class="mobile-userNav"></li>
+                    <li class="dcjq-parent-li">
+                        <a href="#" class="dcjq-parent"><span class="glyphicon glyphicon-cog"></span> <span class="nav-label"> Tools </span><span class="glyphicon caret"></span></a>
+                        <ul style="display: none;">
+                            <li>
+                                <a href=""> <i
+                                        class="glyphicon glyphicon-asterisk"></i>  Widgets</a>
+                            </li>
+                            <li>
+                                <a href=""> <i
+                                        class="glyphicon glyphicon-asterisk"></i>  Websites</a>
+                            </li>
+                            <li>
+                                <a href=""> <i
+                                        class="glyphicon glyphicon-asterisk"></i>  Web Banners</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href=""><span class="glyphicon glyphicon-info-sign"></span><span class="nav-label"> Personal Details</span></a>
+                    </li>
+                    <li class="dcjq-parent-li">
+                        <a href="#" class="dcjq-parent"><span class=" glyphicon glyphicon-book"></span><span class="nav-label"> Reports <span class="glyphicon caret"></span></span></a>
+                        <ul style="display: none;">
+                            <li>
+                                <a href="/"> <span class="glyphicon glyphicon-signal"></span> Clients Statistics</a>
+                            </li>
+                            <li>
+                                <a href=""> <span class="glyphicon glyphicon-asterisk"></span> Commissions</a>
+                            </li>
+                            <li>
+                                <a href=""> <span class="glyphicon glyphicon-list"></span> My Clients</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href=""><span class="nav-icon"><span
+                                class=" glyphicon glyphicon-asterisk"></span></span> <span class="nav-label">Fund Withdrawal</span></a>
+                    </li>
+                    <li>
+                        <a href=""><span class="nav-icon"><span
+                                class="glyphicon glyphicon-asterisk"></span></span> <span class="nav-label">Transaction History</span></a>
+                    </li>
+                    <li>
+                        <a href=""><span class="nav-icon"><span
+                                class="glyphicon glyphicon-comment"></span></span> <span class="nav-label">Contact Us</span></a>
+                    </li>
+                    <li>
+                        <a href=""><span class="nav-icon"><span
+                                class="glyphicon glyphicon-asterisk"></span></span> <span
+                                class="nav-label">Legal Documentation</span></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;">
+                <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+            </div>
+            <div class="ps-scrollbar-y-rail" style="top: 0px; right: 0px;">
+                <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 0px;"></div>
+            </div>
+        </div>
+    </div>
+
+                <div class="page-content">
+                    <!--Topbar Start Here -->
+                                        <header class="top-bar">
+                                            <div class="container-fluid top-nav">
+                                                <div class="row">
+                                                    <div class="col-md-5 col-sm-1 col-xs-2 user-name-main-block">
+                                                        <div class="clearfix top-bar-action hidden-md hidden-lg">
+                                                            <span class="leftbar-action desktop"><span class="glyphicon glyphicon-chevron-left"></span></span>
+                                                        </div>
+
+
+                                                    </div>
+                                                    <div class="col-sm-3 col-xs-8 hidden-md hidden-lg text-center logo-block">
+                                                        <a href="" class="logo" title="Home"><img
+                                                                src="../images/logo-mob.png" width="185"
+                                                                alt="Home" class="img-responsive"></a>
+                                                    </div>
+                                                    <div class="col-md-7 col-sm-8 col-xs-12 responsive-fix">
+                                                        <div class="top-aside-right">
+                                                            <button type="button" class="btn-navbar-toggle collapsed visible-xs-block"
+                                                                    data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                                                                    aria-controls="navbar" data-original-title="" title="">
+                                                                <span class="glyphicon glyphicon-chevron-right"></span>
+                                                            </button>
+                                                            <div id="navbar" class="user-nav navbar-collapse collapse">
+                                                                <ul>
+                                                                    <li><a href="javascript:void(0);" onclick="onChatOpen()" class="live-chat"><span
+                                                                            class="glyphicon glyphicon-commentt"></span> Livechat</a>
+                                                                    </li>
+                                                                    <li><a href="/">Faq</a></li>
+                                                                    <li><a href="" target="_blank">Forextime.com</a></li>
+                                                                    <li class="dropdown">
+                                                                        <a data-toggle="dropdown" href=""
+                                                                           class="clearfix dropdown-toggle">
+                                                                            English <span class="caret"></span>
+                                                                        </a>
+                                                                        <ul role="menu" class="dropdown-menu fadeInUp">
+                                                                            <li><a href="">Tiếng Việt</a></li>
+									    <li><a href="">Tiếng Anh</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                    <li><a href=""><span class="glyphicon glyphicon-log-in"></span> Log</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </header>
+
+                    <!--Content Start Here -->
+                                            <div class="main-container">
+                                                <div class="container-fluid">
+                                                    <div class="row">
+
+                                                        <div class="col-md-12">
+                                                            <h1>Introducing Partner dashboard</h1>
+                                                            <p>Forex = Foreign Exchange : trao đổi ngoại tệ / ngoại hối, thường được viết là FOREX hay FX hay spot FX, và đây là thị trường tài chính lớn nhất thế giới, với số lượng tiền giao dịch mỗi ngày đã lên dến 1.95 nghìn tỉ USD ( 2006 ) và hiện tại là khoảng 4,000 tỷ USD ( 3,98 trillion USD, theo thống kê từ năm 2013) . Nếu bạn so sánh với thị trường chứng khoán New York 25 tỉ USD giao dịch mỗi ngày, bạn sẽ có thể tưởng tượng được thị trường này khổng lồ như thế nào.</p>
+
+                                                            <p>  Thị trường trao đổi ngoại tệ (Forex) là thị trường tiền tệ giữa các ngân hàng được thành lập vào năm 1971 khi tỷ lệ trao đổi trôi nổi được cụ thể hoá. Thị trường là một phạm vi hoạt động trong đó tiền tệ của mỗi quốc gia được trao đổi với nhau và là nơi để thực hiện việc kinh doanh quốc tế.</p>
+
+                                                            <p> Forex là một nhóm gồm khoảng 4500 tổ chức giao dịch tiền tệ, các ngân hàng quốc tế, các ngân hàng trung tâm của chính phủ và các công ty thương mại. Việc chi trả cho xuất nhập khẩu cũng như việc mua bán tài sản đều phải thông qua thị trường trao đổi ngoại tệ. Đây được gọi là thị trường trao đổi ngoại tệ ”tiêu thụ”. Cũng có những đoạn đầu cơ trong những công ty Forex đó là sự phơi bày về tài chính rộng lớn để các nền kinh tế ở nước ngoài tham gia vào Forex để bù đắp nguy cơ rủi ro của việc đầu tư quốc tế.</p>
+
+                                                            <p> Vậy “hàng hóa” của thị trường FOREX là gì? Câu trả lời là TIỀN. Giao dịch ngoại hối là hoạt động giao dịch mua một số lượng tiền này và bán một số lượng tiền khác diễn ra cùng thời điểm. Tiền được giao dịch thông qua người môi giới hoặc trực tiếp theo từng cặp; ví dụ cặp EUR/USD hay GBP/JPY.</p>
+
+                                                            <p>  Hoạt động giao dịch FOREX có thể sẽ phức tạp đối với nhiều người vì họ không thể mua bán tận tay bất kì thứ gì trong thị trường. Đơn giản bạn hãy nghĩ việc mua 1 đồng tiền nào đó như là mua cổ phần của 1 đất nước. Khi bạn mua đồng Yên Nhật, bạn đang tác dộng đến tỉ giá ngoại hối của Nhật và gián tiếp lên Kinh tế Nhật, do giá trị của động tiền là sự phản chiếu đánh giá của thị trường về “sức khỏe” trong hiện tại và trong tương lai của một quốc gia.</p>
+
+                                                            <p>  Tổng quan, tỉ giá của một loại tiền tệ so với một loại tiền tệ khác là sự phản chiếu các yếu tố của một nên kinh tế khi so sánh với một nền kinh tế khác.</p>
+
+                                                            <p>  Không như các thị trường tài chính khác, FOREX cũng không có một trung tâm tài chính hay giao dịch nào cả. Thị trường ngoại hối là thị trường “liên ngân hàng”, và dựa trên giao dịch điện tử giữa hệ thống nối kết các ngân hàng với nhau, và hoạt động suốt 24 giờ trong ngày,</p>
+
+                                                            <p>  Trong thập kỉ trước, chỉ có những “gã khổng lồ” mới gia nhập thị trường này được. Điều kiện tối thiểu nếu bạn muốn giao dịch trong thời gian đó là bạn phải có từ 10 đến 50 triệu USD để bắt đầu. FOREX ra đời lúc đầu nhằm mục đích đáp ứng nhu cầu của các ngân hàng và các công ty khổng lồ trong ngành, không phải là những “chàng tí hon”. Tuy nhiên, với sự hỗ trợ kì diệu của Internet, hệ thống giao dịch trực tuyến, các công ty giao dịch đã ra đời cho phép mở những tài khoản “lẻ” cho chúng ta. Ngày nay, những nhà môi giới trên thị trường được phép phá vỡ những đơn vị giao dịch rộng lớn và cho phép những giao dịch nhỏ có cơ hội để mua và bán bất cứ số nào trong những giá trị nhỏ hơn này (lots).</p>
+
+                                                            <p> Ngân hàng thương mại có 2 vai trò trong thị trường Forex:</p>
+
+                                                            <p> 1. Làm cho việc giao dịch giữa hai bên trở nên dễ dàng, ví dụ như những công ty muốn trao đổi tiền tệ (người tiêu thụ).</p>
+
+                                                            <p>  2. Đầu cơ bằng cách mua và bán tiền tệ. Ngân hàng có vai trò trong những đơn vị tiền tệ nhất định bởi vì người ta tin rằng trong tương lai chúng sẽ có giá cao hơn (nếu mua trữ) và thấp hơn (nếu bán sớm). Người ta thống kê rằng 70% lợi tức thường niên của những ngân hàng quốc tế được sinh ra từ việc đầu cơ tiền tệ. Những đầu cơ khác bao gồm những nhà giao dịch thành công nhất trên thế giới ví dụ George Soros.</p>
+
+                                                            <p>  Loại thứ 3 của Forex bao gồm những ngân hàng trung tâm của các quốc gia khác giống như ngân hàng dự trữ liên bang Mỹ. Họ tham gia Forex để đảm bảo lợi nhuận tài chính của quốc gia họ. Khi ngân hàng trung tâm mua và bán tiền tệ hoặc ngoại tệ thì mục đích là để giữ vững giá trị đồng tiền của đất nước họ.</p>
+
+                                                            <p>  Forex rất rộng và có rất nhiều người tham gia chứ không phải một người, chỉ có những ngân hàng trung tâm của chính phủ mới có thể kiểm soát thị trường. So sánh với mức giao dịch trung bình hằng ngày 300 tỷ đô của thị trường Trái phiếu chính phủ và khoảng 100 tỷ đô được giao dịch trên thị trường chứng khoán Mỹ thì Forex rất lớn vì đã vượt qua mức 1.9 nghìn tỷ đô mỗi ngày (2006).</p>
+
+                                                            <p>  Từ “thị trường” là sự nhầm tên nhẹ nhàng trong việc mô tả giao dịch Forex. Không có vị trí trung tâm cho việc hoạt động giao dịch vì nó đã có trong những thị trường tiền tệ ở tương lai. Giao dịch được thực hiện qua điện thoại và thông qua những máy vi tính ở hàng trăm vị trí trên khắp thế giới. Phần lớn giao dịch được thực hiện giữa khoảng 300 ngân hàng quốc tế lớn nơi sở hữu những giao dịch cho công ty lớn, chính phủ và cho chính tài khoản của họ. Những ngân hàng này tiếp tục cung cấp giá (“bid” để mua và “ask” để bán) với nhau và với những thị trường rộng hơn. Chỉ số gần đây nhất từ 1 trong những ngân hàng này được xem là giá hiện tại trên thị trường của đồng tiền đó. Những dịch vụ báo cáo dữ liệu riêng khác nhau cung cấp những thông tin về giá cả “trực tiếp” thông qua internet.</p>
+
+                                                            <p>   Tất cả những gì bạn cần khi giao dịch là một chiếc máy vi tính, kết nối Internet, và những thông tin về thị trường này.</p>
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                </div>
+                                    <script src="../js/jquery-migrate-1.2.1.min.js"></script>
+                                    <script src="../js/jRespond.min.js"></script>
+                                    <script src="../js/bootstrap.min.js"></script>
+                                    <script src="../js/jquery.cookie.js"></script>
+                                    <script src="../js/nav-accordion.js"></script>
+                                    <script src="../js/perfect-scrollbar.jquery.min.js"></script>
+                                    <script src="../js/jquery.matchHeight.js"></script>
+                                    <script src="../js/bootstrap-select.min.js"></script>
+                                    <script src="../js/jquery.inputmask.bundle.min.js"></script>
+                                    <script src="../js/jquery.loadmask.js"></script>
+                                    <script src="../js/livechat.js"></script>
+
+                                    <!-- javscripts -->
+                                    <script src="../js/flowplayer-3.2.13.min.js"></script>
+                                    <script src=../js/flowplayer.ipad-3.2.13.min.js"
+                                            type="text/javascript"></script>
+                                    <script src="../js/video-popup.js"
+                                            type="text/javascript"></script>
+                                    <script type="text/javascript"
+                                            src="../js/highcharts.js"></script>
+                                    <script type="text/javascript"
+                                            src="../js/exporting.js"></script>
+                                    <script type="text/javascript"
+                                            src="../js/no-data-to-display.js"></script>
+
+                                    <!-- end javascripts-->
+
+                                    <script src="../js/smart-resize.js"></script>
+                                    <script src="../js/layout.init.js"></script>
+                                    <script src="../js/clipboard.js"></script>
+                                    <script src="../js/matmix.init.js"></script>
+</div>
+</body>
