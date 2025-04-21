@@ -124,7 +124,7 @@ echo "
                     </li>
 
                     <li>
-                        <a href=\"../admin/quanly_voucher.php\">  <i class=\"fas fa-ticket-alt\"></i>      <span class=\"nav-label\"> QUẢN LÝ VOUCHER</span>
+                        <a href=\"../admin/quanly_voucher.php\">  <i class=\"fas fa-ticket-alt\"></i>      <span class=\"nav-label\"> MÃ GIẢM GIÁ </span>
                         </a>
                     </li>
                     <li>
@@ -186,7 +186,7 @@ echo "
                                              <li><a href=\"#\">English</a></li>
                                          </ul>
                                      </li>
-                                     <li><a href=\"../site/index.php?index=1\"> Trang chủ site</a></li>
+                                     <li><a href=\"../site/index.php?index=1\"> Trang chủ </a></li>
                                      <li><a href=\"../site/DangXuat.php\"> Đăng xuất</a></li>
                                  </ul>
                              </div>

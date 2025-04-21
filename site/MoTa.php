@@ -34,6 +34,7 @@ if (isset($_GET['idSP']) && filter_var($_GET['idSP'], FILTER_VALIDATE_INT)) {
         $result_img = mysqli_query($conn, $sql_img_check);
 
         // --- Lấy comment đã duyệt ---
+        // ***** THAY ĐỔI: Lấy cả cột rating *****
         $sql_comment = "SELECT * FROM sanpham_comment WHERE idSP=" . $idSP . " AND kiem_duyet = 1 ORDER BY ngay_comment DESC";
         $rs_cm = mysqli_query($conn, $sql_comment);
 
@@ -44,12 +45,12 @@ if (isset($_GET['idSP']) && filter_var($_GET['idSP'], FILTER_VALIDATE_INT)) {
     $error_load = "ID sản phẩm không hợp lệ.";
 }
 
-// --- Xử lý POST comment (ĐÃ CẬP NHẬT ĐỂ LOẠI BỎ HTML KHI LƯU) ---
+// --- Xử lý POST comment (ĐÃ CẬP NHẬT ĐỂ THÊM RATING) ---
 $comment_error = null;
 $comment_success = null;
 if (isset($_POST['binhluan'])) {
     if (!$product_details_available) {
-         $comment_error = "Sản phẩm không hợp lệ để bình luận.";
+        $comment_error = "Sản phẩm không hợp lệ để bình luận.";
     } elseif (!isset($_SESSION['Username'])) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
         echo "<script language='javascript'>alert('Bạn phải đăng nhập để bình luận!');";
@@ -58,39 +59,54 @@ if (isset($_POST['binhluan'])) {
     } else {
         $comment_content_raw = isset($_POST['comment']) ? trim($_POST['comment']) : '';
         $comment_content_plain = strip_tags($comment_content_raw);
+        // ***** THAY ĐỔI: Lấy rating từ form *****
+        $comment_rating = isset($_POST['rating']) ? (int)$_POST['rating'] : null; // Lấy rating, nếu không có là null
+
         if ($conn) {
             $comment_content_escaped = mysqli_real_escape_string($conn, $comment_content_plain);
         } else {
-             $comment_content_escaped = "";
-             $comment_error = "Lỗi kết nối cơ sở dữ liệu.";
+            $comment_content_escaped = "";
+            $comment_error = "Lỗi kết nối cơ sở dữ liệu.";
         }
         $comment_idSP = $idSP;
         $comment_user = $_SESSION['Username'];
         $comment_date = date("Y-m-d H:i:s");
-        $comment_approve = 0;
+        $comment_approve = 0; // Mặc định chờ duyệt
 
-        if ($comment_idSP > 0 && !empty($comment_content_plain) && empty($comment_error)) {
-            $sl_cm = "INSERT INTO sanpham_comment(idSP, hoten, noidung, ngay_comment, kiem_duyet) VALUES(" . $comment_idSP . ", '" . $comment_user . "', '" . $comment_content_escaped . "', '" . $comment_date . "', " . $comment_approve . ") ";
+        // ***** THAY ĐỔI: Thêm kiểm tra rating *****
+        if (empty($comment_content_plain) && empty($comment_error)) {
+             $comment_error = "Vui lòng nhập nội dung bình luận!";
+        } elseif ($comment_rating === null || $comment_rating < 1 || $comment_rating > 5 && empty($comment_error)) {
+             // Bắt buộc phải chọn rating nếu bạn muốn
+             $comment_error = "Vui lòng chọn đánh giá từ 1 đến 5 sao.";
+        }
+
+        // ***** THAY ĐỔI: Kiểm tra lại điều kiện INSERT *****
+        if ($comment_idSP > 0 && !empty($comment_content_plain) && $comment_rating >= 1 && $comment_rating <= 5 && empty($comment_error)) {
+            // ***** THAY ĐỔI: Thêm rating vào câu lệnh INSERT *****
+            $sl_cm = "INSERT INTO sanpham_comment(idSP, hoten, noidung, rating, ngay_comment, kiem_duyet) VALUES(" . $comment_idSP . ", '" . $comment_user . "', '" . $comment_content_escaped . "', " . $comment_rating . ", '" . $comment_date . "', " . $comment_approve . ") ";
             $rs_themcm = mysqli_query($conn, $sl_cm);
             if ($rs_themcm) {
                 $comment_success = "Gửi bình luận thành công, bình luận của bạn đang chờ duyệt!";
-                 header("Location: " . $_SERVER['PHP_SELF'] . "?idSP=" . $idSP . "&comment=success#comment-form-anchor");
-                 exit;
+                header("Location: " . $_SERVER['PHP_SELF'] . "?idSP=" . $idSP . "&comment=success#comment-form-anchor");
+                exit;
             } else {
                 error_log("Comment insert failed: " . mysqli_error($conn));
                 $comment_error = "Gửi bình luận không thành công. Vui lòng thử lại.";
             }
-        } elseif (empty($comment_content_plain) && empty($comment_error)) {
-             $comment_error = "Vui lòng nhập nội dung bình luận!";
         }
+        // Không cần elseif ở đây nữa vì đã kiểm tra lỗi ở trên
     }
 }
+
 // Lấy lại comment nếu cần (trường hợp không redirect hoặc có lỗi)
-if ($product_details_available && !($comment_success)) { // Chỉ lấy lại nếu SP tồn tại và không gửi thành công
+// Chỉ lấy lại nếu SP tồn tại và không phải là trang thành công sau khi redirect
+if ($product_details_available && !(isset($_GET['comment']) && $_GET['comment'] == 'success')) {
+    // ***** THAY ĐỔI: Lấy cả cột rating *****
      $sql_comment = "SELECT * FROM sanpham_comment WHERE idSP=" . $idSP . " AND kiem_duyet = 1 ORDER BY ngay_comment DESC";
-     // Kiểm tra rs_cm đã tồn tại và giải phóng nếu cần trước khi query lại
-     if (isset($rs_cm) && $rs_cm) {
-        mysqli_free_result($rs_cm);
+     // Giải phóng kết quả cũ nếu có trước khi query lại
+     if (isset($rs_cm) && is_object($rs_cm)) { // Kiểm tra $rs_cm là object trước khi free
+       mysqli_free_result($rs_cm);
      }
      $rs_cm = mysqli_query($conn, $sql_comment);
 }
@@ -105,6 +121,7 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
     <link rel="stylesheet" href="../js/flexslider/flexslider.css" type="text/css">
     <link rel="stylesheet" href="../css/hoa.min.css" type="text/css">
     <link rel="stylesheet" href="../css/layout.min.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         /* --- CSS CHO KHUNG BAO NGOÀI GIỐNG TRANG CHỦ --- */
@@ -141,12 +158,47 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
         .comment-content { flex-grow: 1; }
         .comment-author { font-weight: bold; color: #0d6efd; margin-bottom: 2px;}
         .comment-date { font-size: 0.85em; color: #777; margin-bottom: 5px; }
-        .comment-text { background-color: #f5f5f5; padding: 12px 15px; border-radius: 5px; word-wrap: break-word; line-height: 1.6; font-size: 0.95em; }
+        .comment-text { background-color: #f5f5f5; padding: 12px 15px; border-radius: 5px; word-wrap: break-word; line-height: 1.6; font-size: 0.95em; margin-top: 8px; } /* Thêm margin-top */
         .comment-form { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc;}
         .comment-form h4 { margin-bottom: 15px; font-weight: bold; font-size: 1.3em;}
         .comment-form .form-group { margin-bottom: 15px; }
         .comment-form textarea { min-height: 100px; font-size: 0.95em; }
         .comment-form .btn { margin-top: 10px; padding: 8px 20px; }
+
+        /* ***** THAY ĐỔI: CSS cho Rating Stars ***** */
+        /* --- Stars trong form bình luận --- */
+        .rating-input-container { margin-bottom: 15px; }
+        .rating-input-container .rating-label { font-weight: bold; margin-bottom: 5px; display: block; color: #333; }
+        .rating-stars { display: inline-flex; flex-direction: row-reverse; /* Đảo ngược thứ tự để hover từ trái sang phải dễ dàng */ justify-content: flex-end; }
+        .rating-stars input[type="radio"] { display: none; } /* Ẩn radio button gốc */
+        .rating-stars label { /* Style cho icon sao */
+            color: #ccc; /* Màu sao mặc định (chưa chọn) */
+            font-size: 1.8em;
+            padding: 0 3px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        /* Hiệu ứng hover: khi hover vào 1 sao (label), nó và các sao bên trái nó (~) đổi màu */
+        .rating-stars label:hover,
+        .rating-stars label:hover ~ label {
+            color: #ffc107; /* Màu vàng gold khi hover */
+        }
+        /* Khi radio được chọn: các sao bên trái của sao được chọn sẽ đổi màu */
+        .rating-stars input[type="radio"]:checked ~ label {
+            color: #ffc107; /* Màu vàng gold khi được chọn */
+        }
+
+        /* --- Stars hiển thị trong bình luận đã có --- */
+        .comment-rating-display { margin-bottom: 8px; /* Khoảng cách với text */ font-size: 1em; /* Kích thước sao */ line-height: 1; }
+        .comment-rating-display .star {
+             color: #e0e0e0; /* Màu sao trống */
+             margin-right: 1px; /* Khoảng cách nhỏ giữa các sao */
+        }
+        .comment-rating-display .star.filled {
+             color: #ffc107; /* Màu sao được tô */
+        }
+         /* ***** KẾT THÚC CSS Rating Stars ***** */
+
         @media (max-width: 767px) { .product-info { text-align: center; } .info-row { justify-content: center; } .info-label { width: auto; margin-right: 8px; } .product-actions { text-align: center; } .product-actions .btn { display: inline-block; margin-left: 5px; margin-right: 5px; } }
     </style>
 </head>
@@ -179,8 +231,9 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                             }
                             // Ảnh phụ
                             if ($result_img && mysqli_num_rows($result_img) > 0) {
-                                mysqli_data_seek($result_img, 0);
-                                while( $row_img = $result_img->fetch_assoc()) {
+                                // Nên dùng fetch_assoc trong vòng lặp thay vì data_seek nếu chưa fetch
+                                // mysqli_data_seek($result_img, 0); // Bỏ nếu chưa fetch trước đó
+                                while( $row_img = $result_img->fetch_assoc()) { // fetch ở đây
                                     if (!empty($row_img['urlHinh']) && file_exists($image_dir . $row_img['urlHinh'])) {
                                         echo '<li><img src="' . $image_dir . htmlspecialchars($row_img['urlHinh']) . '" alt="'.htmlspecialchars($r['TenSP']).' - Ảnh phụ"></li>';
                                         $has_image_slide = true;
@@ -264,7 +317,7 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                          <div class="product-description">
                              <h4><strong>Mô tả sản phẩm:</strong></h4>
                              <div class="prod-box">
-                                 <?php echo $r['MoTa']; ?>
+                                 <?php echo $r['MoTa']; // Xem xét dùng nl2br nếu mô tả có xuống dòng ?>
                              </div>
                          </div>
                      <?php endif; ?>
@@ -275,7 +328,7 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                          <div class="product-details">
                              <h4><strong>Chi tiết sản phẩm:</strong></h4>
                              <div class="prod-box">
-                                 <?php echo $r['NoiDung']; ?>
+                                 <?php echo $r['NoiDung']; // Nội dung thường là HTML từ editor, nên không cần nl2br ?>
                              </div>
                          </div>
                      <?php endif; ?>
@@ -290,7 +343,7 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                     <?php
                     // Hiển thị các bình luận đã duyệt
                     if ($rs_cm && mysqli_num_rows($rs_cm) > 0) {
-                        mysqli_data_seek($rs_cm, 0);
+                        mysqli_data_seek($rs_cm, 0); // Đảm bảo con trỏ ở đầu kết quả
                         while($row_cm = $rs_cm->fetch_assoc()){
                     ?>
                         <div class="comment-item">
@@ -300,7 +353,21 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                             <div class="comment-content">
                                 <div class="comment-author"><?php echo htmlspecialchars($row_cm['hoten']);?></div>
                                 <div class="comment-date">
-                                    <i><?php echo date("d/m/Y", strtotime($row_cm['ngay_comment'])); // <<< CHỈ HIỂN THỊ NGÀY/THÁNG/NĂM ?></i>
+                                    <i><?php echo date("d/m/Y H:i", strtotime($row_cm['ngay_comment'])); // Hiển thị cả giờ phút ?></i>
+                                </div>
+
+                                <div class="comment-rating-display">
+                                    <?php
+                                    $rating = isset($row_cm['rating']) ? (int)$row_cm['rating'] : 0;
+                                    if ($rating > 0) {
+                                        for ($i = 1; $i <= 5; $i++) {
+                                            // Thêm class 'filled' nếu $i <= $rating
+                                            $star_class = ($i <= $rating) ? 'fas fa-star star filled' : 'far fa-star star'; // Dùng fas/far của FontAwesome
+                                            echo '<i class="' . $star_class . '"></i>';
+                                        }
+                                    }
+                                    // Không hiển thị gì nếu không có rating (rating = 0 hoặc null)
+                                    ?>
                                 </div>
                                 <div class="comment-text">
                                     <?php echo nl2br(htmlspecialchars($row_cm['noidung'])); ?>
@@ -309,7 +376,10 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                         </div>
                     <?php
                         } // end while comment
-                        if(isset($rs_cm) && $rs_cm) mysqli_free_result($rs_cm);
+                        // ***** THAY ĐỔI: Chỉ giải phóng nếu $rs_cm là resource/object hợp lệ *****
+                        if(isset($rs_cm) && is_object($rs_cm)) {
+                             mysqli_free_result($rs_cm);
+                        }
                     } else {
                         echo "<p>Chưa có bình luận nào cho sản phẩm này.</p>";
                     }
@@ -319,14 +389,26 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
                     <div class="comment-form" id="comment-form-anchor">
                         <h4>Viết bình luận của bạn</h4>
                         <?php
+                            // Hiển thị thông báo thành công hoặc lỗi
                             if(isset($_GET['comment']) && $_GET['comment'] == 'success') {
                                 echo '<div class="alert alert-success">Gửi bình luận thành công, bình luận của bạn đang chờ duyệt!</div>';
                             } elseif (!empty($comment_error)) {
                                 echo '<div class="alert alert-danger">'.htmlspecialchars($comment_error).'</div>';
                             }
-                         ?>
+                           ?>
                         <?php if(isset($_SESSION['Username'])): ?>
-                            <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . "?idSP=" . $idSP; ?>">
+                            <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . "?idSP=" . $idSP; ?>#comment-form-anchor">
+
+                                <div class="rating-input-container form-group mb-3">
+                                    <label class="rating-label">Đánh giá của bạn:</label>
+                                    <div class="rating-stars">
+                                        <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 sao"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 sao"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 sao"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 sao"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 sao"><i class="fas fa-star"></i></label>
+                                    </div>
+                                </div>
                                 <div class="form-group mb-3">
                                     <label for="comment" class="form-label visually-hidden">Nội dung bình luận:</label>
                                     <textarea name="comment" id="comment" rows="4" class="form-control" required placeholder="Nhập bình luận của bạn..."></textarea>
@@ -368,13 +450,14 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
  </div>
 </div>
 
-<?php /* --- SCRIPT CHO FLEXSLIDER VÀ BOOTSTRAP (GIỮ NGUYÊN) --- */ ?>
+<?php /* --- SCRIPT CHO FLEXSLIDER VÀ BOOTSTRAP --- */ ?>
 <script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="../js/bootstrap.min.js"></script> <?php // Đảm bảo dùng đúng version Bootstrap ?>
 <script type="text/javascript" src="../js/flexslider/jquery.flexslider-min.js"></script>
 
 <script type="text/javascript">
     $(window).on('load', function() {
+      // Khởi tạo FlexSlider
       if ($('.flexslider').length > 0) {
           try {
               $('.flexslider').flexslider({
@@ -385,11 +468,18 @@ if ($product_details_available && !($comment_success)) { // Chỉ lấy lại n�
               console.error("Lỗi khởi tạo FlexSlider:", e);
           }
       }
+
+        // Tự động ẩn thông báo bình luận sau 5 giây
        const commentAlert = document.querySelector('.comment-form .alert');
        if(commentAlert) {
            setTimeout(() => {
+               // Dùng jQuery fadeOut nếu đang dùng jQuery
                $(commentAlert).fadeOut('slow', function() { $(this).remove(); });
-           }, 5000);
+               // Hoặc dùng JS thuần:
+               // commentAlert.style.transition = 'opacity 0.5s ease';
+               // commentAlert.style.opacity = '0';
+               // setTimeout(() => commentAlert.remove(), 500);
+           }, 5000); // 5000ms = 5 giây
        }
     });
 </script>

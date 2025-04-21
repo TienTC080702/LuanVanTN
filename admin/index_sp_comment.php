@@ -1,58 +1,40 @@
 <?php
 // ---- KHỞI ĐẦU: Kết nối và Xử lý POST/GET ----
-// Đảm bảo session được khởi tạo trước bất kỳ output nào
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
-    ob_start(); // Dùng output buffering nếu cần thiết
+    ob_start();
 }
 
-include_once ('../connection/connect_database.php'); // Kết nối CSDL
+include_once ('../connection/connect_database.php');
 
-// --- Xử lý yêu cầu XÓA bình luận (Thêm mới - qua GET) ---
+// --- Xử lý yêu cầu XÓA bình luận (Giữ nguyên) ---
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['idCM'])) {
-    $id_comment_delete = filter_input(INPUT_GET, 'idCM', FILTER_VALIDATE_INT); // Lấy và lọc ID
-
-    // Kiểm tra ID hợp lệ
+    $id_comment_delete = filter_input(INPUT_GET, 'idCM', FILTER_VALIDATE_INT);
     if ($id_comment_delete && $id_comment_delete > 0) {
-        // Lưu ý: Thiếu CSRF Token - Để bảo mật hơn nên dùng POST và token
-        // Tuy nhiên, để phù hợp với cấu trúc hiện tại (link GET + confirm JS), tạm thời bỏ qua token
-
         $sql_delete = "DELETE FROM sanpham_comment WHERE id_comment = ?";
         $stmt_delete = mysqli_prepare($conn, $sql_delete);
-
         if ($stmt_delete) {
             mysqli_stmt_bind_param($stmt_delete, "i", $id_comment_delete);
             if (mysqli_stmt_execute($stmt_delete)) {
-                // Kiểm tra xem có dòng nào thực sự bị xóa không
-                if (mysqli_stmt_affected_rows($stmt_delete) > 0) {
-                    $_SESSION['flash_message'] = "Đã xóa bình luận thành công (ID: " . $id_comment_delete . ").";
-                } else {
-                    // Có thể ID không tồn tại
-                    $_SESSION['flash_error'] = "Không tìm thấy bình luận để xóa (ID: " . $id_comment_delete . ") hoặc không có gì thay đổi.";
-                }
+                 $_SESSION['flash_message'] = (mysqli_stmt_affected_rows($stmt_delete) > 0) ? "Đã xóa bình luận thành công (ID: $id_comment_delete)." : "Không tìm thấy bình luận để xóa (ID: $id_comment_delete) hoặc không có gì thay đổi.";
             } else {
-                // Lỗi khi thực thi câu lệnh DELETE
                 $_SESSION['flash_error'] = "Lỗi khi thực thi xóa bình luận: " . mysqli_stmt_error($stmt_delete);
                 error_log("Delete comment error (execute): " . mysqli_stmt_error($stmt_delete) . " - ID: " . $id_comment_delete);
             }
             mysqli_stmt_close($stmt_delete);
         } else {
-            // Lỗi khi chuẩn bị câu lệnh DELETE
             $_SESSION['flash_error'] = "Lỗi chuẩn bị câu lệnh xóa: " . mysqli_error($conn);
             error_log("Delete comment error (prepare): " . mysqli_error($conn));
         }
     } else {
-        // ID không hợp lệ
         $_SESSION['flash_error'] = "ID bình luận không hợp lệ để xóa.";
     }
-
-    // Chuyển hướng về trang này để xóa tham số GET và hiển thị flash message
     header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']));
     exit;
 }
 
 
-// --- Xử lý yêu cầu thay đổi trạng thái (Duyệt/Bỏ duyệt) (Giữ nguyên - qua POST) ---
+// --- Xử lý yêu cầu thay đổi trạng thái (Giữ nguyên) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'set_status' && isset($_POST['id_comment']) && isset($_POST['new_status'])) {
     $id_comment_update = (int)$_POST['id_comment'];
     $new_status = (int)$_POST['new_status'];
@@ -63,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         if ($stmt_update) {
             mysqli_stmt_bind_param($stmt_update, "ii", $new_status, $id_comment_update);
             if (mysqli_stmt_execute($stmt_update)) {
-                 $_SESSION['flash_message'] = "Cập nhật trạng thái bình luận thành công.";
+                $_SESSION['flash_message'] = "Cập nhật trạng thái bình luận thành công.";
             } else {
                 $_SESSION['flash_error'] = "Lỗi: Không thể cập nhật trạng thái. " . mysqli_stmt_error($stmt_update);
                 error_log("Update comment status error (execute): " . mysqli_stmt_error($stmt_update) . " - ID: " . $id_comment_update);
@@ -71,12 +53,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             mysqli_stmt_close($stmt_update);
         } else {
             $_SESSION['flash_error'] = "Lỗi chuẩn bị câu lệnh cập nhật: " . mysqli_error($conn);
-             error_log("Update comment status error (prepare): " . mysqli_error($conn));
+            error_log("Update comment status error (prepare): " . mysqli_error($conn));
         }
     } else {
         $_SESSION['flash_error'] = "Lỗi: Trạng thái mới không hợp lệ.";
     }
-    // Tải lại trang sau khi cập nhật trạng thái
     header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']));
     exit;
 }
@@ -86,10 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 $sl_sp_cmt = "SELECT * FROM sanpham_comment ORDER BY ngay_comment DESC";
 $rs_sp_cmt = mysqli_query($conn,$sl_sp_cmt);
 if(!$rs_sp_cmt) {
-    // Thay vì die, ghi log và hiển thị lỗi thân thiện hơn
     error_log("Error fetching comments: " . mysqli_error($conn));
     $error_page_message = "Lỗi: Không thể truy vấn cơ sở dữ liệu bình luận. Vui lòng thử lại sau.";
-    // die("Lỗi: Không thể truy vấn cơ sở dữ liệu bình luận.");
 }
 
 // --- Lấy và xóa thông báo từ session (Giữ nguyên) ---
@@ -114,35 +93,37 @@ if (isset($_SESSION['flash_error'])) {
     <?php include_once ("header1.php");?>
     <title>Quản lý Bình luận Sản phẩm</title>
     <?php include_once('header2.php');?>
-    <?php // Thêm link Font Awesome nếu chưa có (cần cho icon fas fa-...) ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* CSS Giữ nguyên như trước */
-         .action-col { white-space: nowrap; width: 1%; text-align: center; vertical-align: middle; }
-         .status-col { width: 120px; text-align: center; vertical-align: middle; }
-         .stt-col { width: 60px; text-align: center; vertical-align: middle; }
-         .idsp-col { width: 80px; text-align: center; vertical-align: middle; }
-         .date-col { min-width: 140px; text-align: center; vertical-align: middle; } /* Đã cập nhật min-width nếu cần */
-         .comment-content { max-width: 300px; white-space: normal; word-wrap: break-word; vertical-align: middle;}
-         .table td, .table th { vertical-align: middle; }
-         .approve-form { display: inline-block; margin-left: 5px; vertical-align: middle; margin-bottom: 0;} /* Bỏ margin bottom cho form */
-         .action-col .btn, .approve-form .btn { /* Áp dụng chung cho nút và form */
-             padding: 0.25rem 0.5rem;
-             font-size: 0.8rem;
-             min-width: 95px; /* Giữ kích thước nút bằng nhau */
-             margin-bottom: 3px; /* Khoảng cách nếu nút xuống dòng */
-             display: inline-flex; /* Để căn icon và text */
-             align-items: center;
-             justify-content: center;
-             gap: 4px; /* Khoảng cách giữa icon và text */
-         }
-         .card-header { background-color: rgba(0, 123, 255, 0.1); }
-         .card-header h5 { color: #007bff; margin-bottom: 0; font-weight: 600; }
-         .card { border: 1px solid #dee2e6; }
-         .table-hover tbody tr:hover {
-             background-color: #f8f9fa;
-         }
-         .table th { background-color: #e9ecef; } /* Nền header bảng */
+          /* CSS giữ nguyên như phiên bản trước khi thêm sửa giờ */
+          .action-col { white-space: nowrap; width: 1%; text-align: center; vertical-align: middle; }
+          .status-col { width: 120px; text-align: center; vertical-align: middle; }
+          .stt-col { width: 60px; text-align: center; vertical-align: middle; }
+          .idsp-col { width: 80px; text-align: center; vertical-align: middle; }
+          .date-col { min-width: 140px; text-align: center; vertical-align: middle; } /* Có thể giảm min-width nếu muốn */
+          .rating-col { width: 110px; text-align: center; vertical-align: middle; }
+          .rating-col .star { font-size: 0.9em; margin-right: 1px; }
+          .rating-col .star.filled { color: #ffc107; }
+          .rating-col .star.empty { color: #e0e0e0; }
+          .rating-col .no-rating { font-style: italic; color: #888; font-size: 0.9em; }
+          .comment-content { max-width: 300px; white-space: normal; word-wrap: break-word; vertical-align: middle;}
+          .table td, .table th { vertical-align: middle; }
+          .approve-form { display: inline-block; margin-left: 5px; vertical-align: middle; margin-bottom: 0;}
+          .action-col .btn, .approve-form .btn {
+              padding: 0.25rem 0.5rem;
+              font-size: 0.8rem;
+              min-width: 95px;
+              margin-bottom: 3px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+          }
+          .card-header { background-color: rgba(0, 123, 255, 0.1); }
+          .card-header h5 { color: #007bff; margin-bottom: 0; font-weight: 600; }
+          .card { border: 1px solid #dee2e6; }
+          .table-hover tbody tr:hover { background-color: #f8f9fa; }
+          .table th { background-color: #e9ecef; }
     </style>
 </head>
 <body>
@@ -151,10 +132,8 @@ if (isset($_SESSION['flash_error'])) {
 <div class="container-fluid mt-4">
 
     <?php
-        // Hiển thị thông báo flash từ session
         echo $flash_message;
         echo $flash_error;
-        // Hiển thị lỗi truy vấn trang nếu có
         if (isset($error_page_message)) {
              echo "<div class='alert alert-danger'>".htmlspecialchars($error_page_message)."</div>";
         }
@@ -163,64 +142,78 @@ if (isset($_SESSION['flash_error'])) {
     <div class="card shadow-sm mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0 text-primary"> <i class="fas fa-comments me-2"></i> DANH SÁCH BÌNH LUẬN SẢN PHẨM </h5>
-            <?php // Có thể thêm nút hoặc bộ lọc ở đây nếu cần ?>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped table-sm align-middle"> <?php // align-middle căn giữa dọc ?>
+                <table class="table table-bordered table-hover table-striped table-sm align-middle">
                     <thead class="table-light text-center">
                         <tr>
                             <th class="stt-col"><strong>STT</strong></th>
                             <th class="idsp-col"><strong>MÃ SP</strong></th>
                             <th><strong>HỌ TÊN</strong></th>
-                            <th class="date-col"><strong>NGÀY</strong></th>
+                            <th class="date-col"><strong>NGÀY & GIỜ</strong></th> <?php // Giữ nguyên tiêu đề ?>
                             <th class="comment-content"><strong>NỘI DUNG</strong></th>
+                            <th class="rating-col"><strong>ĐÁNH GIÁ</strong></th>
                             <th class="status-col"><strong>TRẠNG THÁI</strong></th>
                             <th class="action-col"><strong>THAO TÁC</strong></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        // Chỉ lặp nếu $rs_sp_cmt hợp lệ và có dữ liệu
                         if (isset($rs_sp_cmt) && mysqli_num_rows($rs_sp_cmt) > 0) {
                             $stt = 1;
                             while ($r = $rs_sp_cmt->fetch_assoc()) {
                                 $id_comment_current = $r['id_comment'];
+                                // Lấy và định dạng ngày giờ
+                                $ngay_comment_obj = !empty($r['ngay_comment']) ? strtotime($r['ngay_comment']) : null;
+                                $display_datetime = $ngay_comment_obj ? date("d/m/Y H:i", $ngay_comment_obj) : 'N/A'; // Chỉ cần định dạng này
                         ?>
                                 <tr>
                                     <td class="stt-col text-center"><strong> <?php echo $stt++; ?> </strong></td>
                                     <td class="idsp-col text-center"><strong><?php echo $r['idSP']; ?> </strong></td>
                                     <td><strong><?php echo htmlspecialchars($r['hoten']); ?> </strong></td>
-                                    <td class="date-col text-center"><strong><?php echo date("d/m/Y", strtotime($r['ngay_comment'])); // <<<=== ĐÃ SỬA Ở ĐÂY ?></strong></td>
+                                    <td class="date-col text-center">
+                                        <?php // ***** THAY ĐỔI: Chỉ hiển thị ngày giờ ***** ?>
+                                        <strong><?php echo $display_datetime; ?></strong>
+                                        <?php // ***** Kết thúc hiển thị ***** ?>
+                                    </td>
                                     <td class="comment-content">
                                         <?php
-                                             // Xử lý hiển thị nội dung an toàn và giữ định dạng xuống dòng
-                                             $plain_text = strip_tags($r['noidung']); // Loại bỏ thẻ HTML nếu có
-                                             $decoded_text = html_entity_decode($plain_text); // Giải mã các thực thể HTML (như &lt;)
+                                             $plain_text = strip_tags($r['noidung']);
+                                             $decoded_text = html_entity_decode($plain_text);
                                         ?>
-                                        <strong><?php echo nl2br(htmlspecialchars($decoded_text)); // Chuyển đổi xuống dòng và escape ký tự đặc biệt ?></strong>
+                                        <strong><?php echo nl2br(htmlspecialchars($decoded_text)); ?></strong>
+                                    </td>
+                                    <td class="rating-col">
+                                        <?php /* Hiển thị sao (giữ nguyên) */
+                                            $rating = isset($r['rating']) ? (int)$r['rating'] : null;
+                                            if ($rating !== null && $rating > 0) {
+                                                for ($i = 1; $i <= 5; $i++) {
+                                                    $star_class = ($i <= $rating) ? 'fas fa-star star filled' : 'far fa-star star empty';
+                                                    echo '<i class="' . $star_class . '"></i>';
+                                                }
+                                            } else {
+                                                echo '<span class="no-rating">Chưa có</span>';
+                                            }
+                                        ?>
                                     </td>
                                     <td class="status-col text-center">
-                                        <strong>
-                                        <?php
-                                             if ($r['kiem_duyet'] == 1) {
-                                                 echo '<span class="badge bg-success">Đã duyệt</span>';
-                                             } else {
-                                                 echo '<span class="badge bg-warning text-dark">Chưa duyệt</span>';
-                                             }
-                                        ?>
-                                        </strong>
+                                        <strong><?php /* Trạng thái (giữ nguyên) */
+                                            if ($r['kiem_duyet'] == 1) echo '<span class="badge bg-success">Đã duyệt</span>';
+                                            else echo '<span class="badge bg-warning text-dark">Chưa duyệt</span>';
+                                        ?></strong>
                                     </td>
                                     <td class="action-col">
-                                        <?php // Nút Xóa - Đã sửa href ?>
+                                        <?php // ***** THAY ĐỔI: Đã xóa nút Sửa giờ ***** ?>
+
+                                        <?php // Nút Xóa (giữ nguyên) ?>
                                         <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>?action=delete&idCM=<?php echo $id_comment_current; ?>"
-                                           class="btn btn-danger btn-sm"
-                                           title="Xóa bình luận này"
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa bình luận ID: <?php echo $id_comment_current; ?> ? Hành động này không thể hoàn tác!');"> <?php // Thêm ID vào confirm ?>
+                                           class="btn btn-danger btn-sm" title="Xóa bình luận này"
+                                           onclick="return confirm('Bạn có chắc chắn muốn xóa bình luận ID: <?php echo $id_comment_current; ?> ? Hành động này không thể hoàn tác!');">
                                             <i class="fas fa-trash-alt"></i> <strong>XÓA</strong>
                                         </a>
 
-                                        <?php // Nút/Form Duyệt ?>
+                                        <?php // Form Duyệt/Bỏ duyệt (giữ nguyên) ?>
                                         <?php if ($r['kiem_duyet'] == 0): ?>
                                             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" class="approve-form">
                                                 <input type="hidden" name="action" value="set_status">
@@ -231,8 +224,6 @@ if (isset($_SESSION['flash_error'])) {
                                                 </button>
                                             </form>
                                         <?php endif; ?>
-
-                                        <?php // Nút/Form Bỏ Duyệt ?>
                                         <?php if ($r['kiem_duyet'] == 1): ?>
                                             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" class="approve-form">
                                                 <input type="hidden" name="action" value="set_status">
@@ -247,31 +238,35 @@ if (isset($_SESSION['flash_error'])) {
                                 </tr>
                         <?php
                             } // end while
-                            mysqli_free_result($rs_sp_cmt); // Giải phóng kết quả sau vòng lặp
-                        } else { // Không có bình luận hoặc có lỗi truy vấn trước đó
-                            if (!isset($error_page_message)) { // Chỉ hiển thị nếu không có lỗi nghiêm trọng hơn
+                            mysqli_free_result($rs_sp_cmt);
+                        } else {
+                            if (!isset($error_page_message)) {
                         ?>
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted p-3">Chưa có bình luận nào.</td>
+                                    <td colspan="8" class="text-center text-muted p-3">Chưa có bình luận nào.</td>
                                 </tr>
                         <?php
-                            } // end if !isset($error_page_message)
-                        } // end if mysqli_num_rows
+                            }
+                        }
                         ?>
                     </tbody>
                 </table>
-            </div> <?php // end table-responsive ?>
-        </div> <?php // end card-body ?>
-    </div> <?php // end card ?>
-
-</div> <?php // end container-fluid ?>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include_once ('footer.php');?>
+
+<?php // Giữ lại các script cần thiết khác (jQuery, Bootstrap) nhưng xóa phần script xử lý sửa giờ ?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <?php
-    if (isset($conn) && $conn) { // Đóng kết nối nếu nó tồn tại
+    if (isset($conn) && $conn) {
          mysqli_close($conn);
     }
-    if (ob_get_level() > 0) { // Chỉ gọi ob_end_flush nếu output buffering đang bật
+    if (ob_get_level() > 0) {
          ob_end_flush();
     }
 ?>
