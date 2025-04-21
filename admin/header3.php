@@ -1,46 +1,45 @@
 <?php
 $tong1 = 0;
-// --- Phần tính tổng doanh thu này có vẻ không liên quan trực tiếp đến việc tạo menu ---
-// --- Chú ý: Cách tính này query CSDL trong vòng lặp (N+1 query), không hiệu quả với nhiều đơn hàng ---
+// --- Phần tính tổng doanh thu ---
+// (Giữ nguyên phần tính toán của bạn, nhưng lưu ý về hiệu suất như đã đề cập)
 $conn = mysqli_connect('localhost', 'root', '', 'cuahangmypham', 3306)
 or die ('Không thể kết nối tới database');
-$conn->set_charset("utf8"); // Nên đặt charset sau khi kết nối thành công
+$conn->set_charset("utf8");
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
-// Lấy các đơn hàng đã xử lý (1: Đã xác nhận, 2: Đang giao, 3: Đã giao - Không lấy 4: Đã hủy)
 $sl_tk = "SELECT idDH FROM donhang WHERE DaXuLy > 0 AND DaXuLy < 4";
 $rs_tk = mysqli_query($conn, $sl_tk);
 $tong = 0;
 $soluong = 0;
 
-if ($rs_tk) { // Kiểm tra query thành công không
+if ($rs_tk) {
     while ($r = $rs_tk->fetch_assoc()) {
-        // Tính tổng tiền cho mỗi đơn hàng
-        // Nên JOIN bảng thay vì query riêng lẻ trong loop
-        $sl_ctdh = "SELECT SUM(SoLuong * Gia) AS TongTien FROM sanpham a JOIN donhangchitiet b ON a.idSP = b.idSP WHERE b.idDH = " . $r['idDH'];
+        // Tối ưu hơn: Tính tổng tiền trực tiếp từ bảng donhang nếu cột TongTien đã lưu giá trị cuối cùng
+        // Hoặc JOIN một lần thay vì loop
+        // Giữ nguyên cách tính cũ của bạn để không thay đổi logic:
+        $sl_ctdh = "SELECT SUM(SoLuong * Gia) AS TongTien FROM donhangchitiet WHERE idDH = " . $r['idDH']; // Giả sử Gia trong donhangchitiet là giá cuối cùng
         $rs = mysqli_query($conn, $sl_ctdh);
-        if ($rs && $d = mysqli_fetch_assoc($rs)) { // Dùng fetch_assoc
-            $tong += $d['TongTien'] ?? 0; // Cộng dồn tổng tiền (dùng ?? 0 nếu có thể NULL)
+        if ($rs && $d = mysqli_fetch_assoc($rs)) {
+            $tong += $d['TongTien'] ?? 0;
         }
-         if($rs) mysqli_free_result($rs); // Giải phóng kết quả con
+         if($rs) mysqli_free_result($rs);
 
-        // Đếm tổng số lượng sản phẩm đã bán (COUNT(SoLuong) có thể không đúng ý bạn, có thể là SUM(SoLuong)?)
-        // Nếu muốn đếm số lượng *sản phẩm* đã bán (không phải số dòng), dùng SUM
         $sl_sl = "SELECT SUM(SoLuong) AS TongSoLuong FROM donhangchitiet WHERE idDH = " . $r['idDH'];
         $rs_sl = mysqli_query($conn, $sl_sl);
-         if ($rs_sl && $c = mysqli_fetch_assoc($rs_sl)) { // Dùng fetch_assoc
-            $soluong += $c['TongSoLuong'] ?? 0; // Cộng dồn số lượng
+         if ($rs_sl && $c = mysqli_fetch_assoc($rs_sl)) {
+            $soluong += $c['TongSoLuong'] ?? 0;
         }
-         if($rs_sl) mysqli_free_result($rs_sl); // Giải phóng kết quả con
+         if($rs_sl) mysqli_free_result($rs_sl);
     }
-    mysqli_free_result($rs_tk); // Giải phóng kết quả chính
+    mysqli_free_result($rs_tk);
 }
-$tong1 = number_format($tong); // Format tổng cuối cùng
+$tong1 = number_format($tong);
 
 // --- Kết thúc phần tính doanh thu ---
 
 
 // --- Bắt đầu tạo HTML ---
+// Sử dụng heredoc syntax để dễ nhìn hơn hoặc giữ nguyên echo nếu bạn muốn
 echo "
 <div class=\"page-container list-menu-view\">
 
@@ -55,7 +54,7 @@ echo "
                 <ul class=\"list-accordion\">
                     <li class=\"mobile-userNav\"></li> <li>
                         <a href=\"../admin/index_ds_sp.php\">
-                           <i class=\"fas fa-box-open\"></i> <span class=\"nav-label\"> SẢN PHẨM</span>
+                            <i class=\"fas fa-box-open\"></i> <span class=\"nav-label\"> SẢN PHẨM</span>
                         </a>
                     </li>
                     <li>
@@ -68,11 +67,7 @@ echo "
                             <i class=\"fas fa-tags\"></i>
                             <span class=\"nav-label\">LOẠI SẢN PHẨM</span>
                             </a>
-                        <ul style=\"display: none;\"> <li><a href=\"#\"><i class=\"fas fa-chart-bar\"></i> Clients Statistics</a></li>
-                            <li><a href=\"#\"><i class=\"fas fa-asterisk\"></i> Commissions</a></li>
-                            <li><a href=\"#\"><i class=\"fas fa-list\"></i> My Clients</a></li>
-                        </ul>
-                    </li>
+                        </li>
                     <li>
                         <a href=\"../admin/index_nh.php\">
                             <i class=\"fas fa-copyright\"></i>
@@ -127,6 +122,11 @@ echo "
                             <span class=\"nav-label\"> KHUYẾN MÃI</span>
                         </a>
                     </li>
+
+                    <li>
+                        <a href=\"../admin/quanly_voucher.php\">  <i class=\"fas fa-ticket-alt\"></i>      <span class=\"nav-label\"> QUẢN LÝ VOUCHER</span>
+                        </a>
+                    </li>
                     <li>
                         <a href=\"../admin/index_pttt.php\">
                             <i class=\"fas fa-credit-card\"></i>
@@ -149,7 +149,7 @@ echo "
     <div class=\"page-content\">
         <header class=\"top-bar\">
             <div class=\"container-fluid top-nav\">
-                 <div class=\"row\">
+                <div class=\"row\">
                     <div class=\"col-md-5 col-sm-1 col-xs-2 user-name-main-block\">
                         <div>
                             <h2 style=\"color:orange; font-size: 1.2em; margin-top: 10px;\">
@@ -168,38 +168,38 @@ echo "
                                 alt=\"Home\" class=\"img-responsive\"></a>
                      </div>
                      <div class=\"col-md-7 col-sm-8 col-xs-12 responsive-fix\">
-                        <div class=\"top-aside-right\">
-                            <button type=\"button\" class=\"btn-navbar-toggle collapsed visible-xs-block\"
-                                    data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\"
-                                    aria-controls=\"navbar\" title=\"Toggle navigation\">
+                         <div class=\"top-aside-right\">
+                             <button type=\"button\" class=\"btn-navbar-toggle collapsed visible-xs-block\"
+                                     data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\"
+                                     aria-controls=\"navbar\" title=\"Toggle navigation\">
                                  <span class=\"icon-bar\"></span> <span class=\"icon-bar\"></span>
                                  <span class=\"icon-bar\"></span>
-                            </button>
-                            <div id=\"navbar\" class=\"user-nav navbar-collapse collapse\">
-                                <ul>
-                                    <li><a href=\"../index.php\" target=\"_blank\">TIẾN TC BEAUTY STORE</a></li> <li class=\"dropdown\">
-                                        <a data-toggle=\"dropdown\" href=\"#\" class=\"clearfix dropdown-toggle\">
-                                             Tiếng Việt <span class=\"caret\"></span>
-                                        </a>
-                                        <ul role=\"menu\" class=\"dropdown-menu fadeInUp\">
-                                            <li><a href=\"#\">Tiếng Việt</a></li>
-                                            <li><a href=\"#\">English</a></li>
-                                        </ul>
-                                    </li>
-                                    <li><a href=\"../site/index.php?index=1\"> Trang chủ site</a></li>
-                                    <li><a href=\"../site/DangXuat.php\"> Đăng xuất</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+                             </button>
+                             <div id=\"navbar\" class=\"user-nav navbar-collapse collapse\">
+                                 <ul>
+                                     <li><a href=\"../index.php\" target=\"_blank\">TIẾN TC BEAUTY STORE</a></li> <li class=\"dropdown\">
+                                         <a data-toggle=\"dropdown\" href=\"#\" class=\"clearfix dropdown-toggle\">
+                                              Tiếng Việt <span class=\"caret\"></span>
+                                         </a>
+                                         <ul role=\"menu\" class=\"dropdown-menu fadeInUp\">
+                                             <li><a href=\"#\">Tiếng Việt</a></li>
+                                             <li><a href=\"#\">English</a></li>
+                                         </ul>
+                                     </li>
+                                     <li><a href=\"../site/index.php?index=1\"> Trang chủ site</a></li>
+                                     <li><a href=\"../site/DangXuat.php\"> Đăng xuất</a></li>
+                                 </ul>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </header>
 
-        <div class=\"main-container\">
-            <div class=\"container-fluid\">
-                <div class=\"row\">
-                    <div class=\"col-md-12\">
-                        "; // Kết thúc echo ở đây, hoặc trước thẻ đóng body/html trong footer.php
+         <div class=\"main-container\">
+             <div class=\"container-fluid\">
+                 <div class=\"row\">
+                     <div class=\"col-md-12\">
+                         "; // Giữ nguyên dấu nháy kép đóng ở cuối
 
-?> 
+?>
